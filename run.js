@@ -41,7 +41,7 @@ bot.start(function (ctx) {
       "%" +
       "\n\n";
   }
-  ctx.reply("Bienvenido a Briq Bot\n\n"+c_);
+  ctx.reply("Bienvenido a Briq Bot\n\n" + c_);
 });
 bot.on("message", function (ctx) {
   //console.log(ctx.update.message.from.id, ctx.update.message.text);
@@ -71,6 +71,8 @@ bot.on("message", function (ctx) {
   bot.telegram.sendMessage(ctx.update.message.from.id, c_);
 });
 function run() {
+  let current_ = {};
+  let ok_run = false;
   fetch("https://www.briq.mx/proyectos")
     .then((res) => res.text())
     .then(function (body) {
@@ -79,6 +81,7 @@ function run() {
           .child;
       for (let x in camps) {
         if (camps[x].node == "element") {
+          ok_run = true;
           for (let y in camps[x].child[1].child) {
             if (camps[x].child[1].child[y].node == "element") {
               let new_c = JSON.parse(
@@ -88,6 +91,7 @@ function run() {
                   .join(" ")
                   .replace(/&quot;/g, '"')
               );
+              current_[new_c.campaign_name] = new_c;
               if (typeof camp_run[new_c.campaign_name] == "undefined") {
                 let msg_ =
                   "Nueva - " +
@@ -114,8 +118,9 @@ function run() {
                 }
               } else {
                 if (
-                  camp_run[new_c.campaign_name].funding_progress !=
-                  new_c.funding_progress
+                  camp_run[new_c.campaign_name].funding_progress + 10 <
+                    new_c.funding_progress ||
+                  new_c.funding_progress > 99
                 ) {
                   let msg_ =
                     new_c.campaign_name + " (" + new_c.funding_progress + "%)";
@@ -136,7 +141,14 @@ function run() {
           }
         }
       }
-      fs.writeFileSync("data_camps.json", JSON.stringify(camp_run));
+      if (ok_run) {
+        for (let c in camp_run) {
+          if (typeof current_[c] == "undefined") {
+            delete camp_run[c];
+          }
+        }
+        fs.writeFileSync("data_camps.json", JSON.stringify(camp_run));
+      }
     });
 }
 setInterval(run, 5 * 60 * 1000);
