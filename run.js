@@ -118,9 +118,10 @@ function run() {
                 }
               } else {
                 if (
-                  camp_run[new_c.campaign_name].funding_progress + 10 <
-                    new_c.funding_progress ||
-                  new_c.funding_progress > 99
+                  parseInt(camp_run[new_c.campaign_name].funding_progress) +
+                    10 <
+                    parseInt(new_c.funding_progress) ||
+                  parseInt(new_c.funding_progress) > 99
                 ) {
                   let msg_ =
                     new_c.campaign_name + " (" + new_c.funding_progress + "%)";
@@ -144,6 +145,17 @@ function run() {
       if (ok_run) {
         for (let c in camp_run) {
           if (typeof current_[c] == "undefined") {
+            let msg_ = "Terminada - " + camp_run[c].campaign_name;
+            console.log(msg_);
+            for (let w in tele_list) {
+              if (tele_list[w] == "OK") {
+                try {
+                  bot.telegram.sendMessage(w, msg_);
+                } catch (e) {
+                  console.log(e);
+                }
+              }
+            }
             delete camp_run[c];
           }
         }
